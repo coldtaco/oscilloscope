@@ -20,7 +20,7 @@ def main():
     width, height = im.size
     nwidth, nheight = 400, 400
     im.thumbnail((nwidth,nheight), Image.ANTIALIAS)
-    edges = cv2.Canny(im,250,255)
+    edges = cv2.Canny(np.array(im),250,255)
     c = Clusters(edges)
     results = c.imgTraversal()
     moves = (np.array(results)-nheight/2)/(nheight/2)
@@ -66,4 +66,4 @@ def opencv(arg, sigma=0.33):
         return
 
 if __name__ == "__main__":
-    opencv(0)
+    main()

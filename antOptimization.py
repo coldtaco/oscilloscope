@@ -2,7 +2,8 @@ import numpy as np
 import random
 class AntOpt:
     def distance(self,p1,p2):
-        x1,y1,x2,y2 = p1, p2
+        x1,y1 = p1
+        x2,y2 = p2        
         return ((x1-x2)**2 + (y1-y2)**2)**.5
 
     def __init__(self, points:list, Q = 4000, pI = 1, dI = 1, pDecay = 0.2, xFirst = False):
@@ -32,6 +33,8 @@ class AntOpt:
         return self.pheremonesM[x][y]**(self.pI)*self.distanceM[x][y]**self.dI
     
     def probVector(self, start, rest):
+        if len(rest) == 1:
+            return 1
         eachP = [self._pxy(start,y) for y in rest]
         sums = np.sum(eachP)
         eachP = [P/(sums-P) for P in eachP]
@@ -44,7 +47,7 @@ class AntOpt:
         path.append(current)
         while len(remaining):
             probV = self.probVector(current, remaining)
-            pick = np.random.choice(remaining,1,probV)
+            pick = np.random.choice(remaining,1,probV)[0]
             remaining.remove(pick)
             path.append(pick)
             current = pick
@@ -67,7 +70,7 @@ class AntOpt:
         #updates pheronomones and decay
         for y in range(len(self.points)):
             for x in range(y,len(self.points)):
-                newP = self.pheremonesM*(1 - self.pDecay) + tPheromones[y][x]
+                newP = self.pheremonesM[y][x]*(1 - self.pDecay) + tPheromones[y][x]
                 self.pheremonesM[y][x] = newP
                 self.pheremonesM[x][y] = newP
 
@@ -75,3 +78,4 @@ class AntOpt:
         for r in range(repitition):
             paths = [self.getPath() for a in range(ants)]
             self.updatePheromone(paths)
+        
