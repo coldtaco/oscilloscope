@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from PIL import Image
 import sys
+from scipy.spatial import distance
 from scipy.io import wavfile
 sys.setrecursionlimit(160000)
 
@@ -152,20 +153,19 @@ class Traversal:
                 self.moveLeft()
             else:
                 self.moveRight()
-        print(f"It took {iters} steps")
+        #print(f"It took {iters} steps")
+
+    def closest_node(self,node, nodes):
+        closest_index = distance.cdist([node], nodes).argmin()
+        return nodes[closest_index]
 
     def nextStart(self,prevy,prevx):
-        for x in range(prevx,self.matrix.shape[1]):
-            if self.matrix[prevy][x]:
-                self.start = [prevy,x]
-                return 0
-        for y in range(prevy,self.matrix.shape[0]):
-            for x in range(0,self.matrix.shape[1]):
-                if self.matrix[y][x]:
-                    print(f'starting at {y},{x}')
-                    self.start = [y,x]
-                    return 0
-        return 1
+        nodes = np.argwhere(self.matrix==1)
+        if len(nodes) == 0:
+            return 1
+        closest = self.closest_node(self.start, nodes)
+        self.start = closest
+        return 0
 
     def fullTraversal(self,iters = 25):
         iterations = 0
@@ -176,12 +176,11 @@ class Traversal:
             self.traverse()
             leftStart = list(self.start)
             #self.traverse('right')
-            print(f"left start = {leftStart}, right start = {self.start}")
+            #print(f"left start = {leftStart}, right start = {self.start}")
             self.flood4(*leftStart)
             #self.flood4(*self.start)
             if self.nextStart(*leftStart):
                 break
             img = Image.fromarray(np.uint8(self.matrix * 240) , 'L')
-            img.save(f'm{iterations}.png')
         print("matrix sum =")
         print(self.matrix.sum())
